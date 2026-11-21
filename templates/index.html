@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Expense Tracker</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+
+            box-sizing: border-box;
+
+        }
+
+        body {
+
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f5fb;
+
+            color: #252542;
+
+        }
+
+        header {
+
+            background: #ffffff;
+
+            padding: 22px 7%;
+
+            font-size: 24px;
+
+            font-weight: bold;
+
+            box-shadow: 0 2px 10px #ddd;
+
+        }
+
+        main {
+
+            max-width: 1100px;
+
+            margin: 35px auto;
+
+            padding: 0 20px;
+
+        }
+
+        h2 {
+
+            margin-bottom: 22px;
+
+        }
+
+        .cards {
+
+            display: grid;
+
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 18px;
+
+        }
+
+        .card {
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            background: white;
+
+            box-shadow: 0 4px 15px #0000000d;
+
+        }
+
+        .card p {
+
+            color: #777;
+
+        }
+
+        .card h2 {
+
+            font-size: 28px;
+
+            margin: 12px 0 0;
+
+        }
+
+        .income { border-left: 5px solid #20b486; }
+
+        .expense { border-left: 5px solid #f16b75; }
+
+        .balance { border-left: 5px solid #7771dc; }
+
+        .content {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 22px;
+
+            margin-top: 25px;
+
+        }
+
+        .panel {
+
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 15px #0000000d;
+
+        }
+
+        input, select {
+
+            width: 100%;
+
+            padding: 12px;
+
+            margin: 9px 0;
+
+            border: 1px solid #ddd;
+
+            border-radius: 8px;
+
+        }
+
+        button {
+
+            width: 100%;
+
+            padding: 13px;
+
+            margin-top: 10px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #7167dc;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+
+        }
+
+        button:hover {
+
+            background: #554bc0;
+
+        }
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            margin-top: 15px;
+
+        }
+
+        td, th {
+
+            text-align: left;
+
+            padding: 12px 5px;
+
+            border-bottom: 1px solid #eee;
+
+        }
+
+        .delete {
+
+            color: #e05252;
+
+            text-decoration: none;
+
+        }
+
+        .chart {
+
+            margin-top: 25px;
+
+            max-width: 420px;
+
+        }
+
+        @media(max-width: 700px) {
+
+            .cards, .content {
+
+                grid-template-columns: 1fr;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>💰 My Expense Tracker</header>
+
+<main>
+
+    <h2>Financial Overview</h2>
+
+    <section class="cards">
+
+        <div class="card income">
+
+            <p>Total Income</p>
+
+            <h2>₹{{ "%.2f"|format(income) }}</h2>
+
+        </div>
+
+        <div class="card expense">
+
+            <p>Total Expenses</p>
+
+            <h2>₹{{ "%.2f"|format(expenses) }}</h2>
+
+        </div>
+
+        <div class="card balance">
+
+            <p>Available Balance</p>
+
+            <h2>₹{{ "%.2f"|format(balance) }}</h2>
+
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="panel">
+
+            <h2>Add Transaction</h2>
+
+            <form action="/add" method="POST">
+
+                <input type="text"
+
+                       name="title"
+
+                       placeholder="Transaction name"
+
+                       required>
+
+                <input type="number"
+
+                       name="amount"
+
+                       placeholder="Amount in ₹"
+
+                       min="0.01"
+
+                       step="0.01"
+
+                       required>
+
+                <select name="category" required>
+
+                    <option value="">Choose category</option>
+
+                    <option>Food</option>
+
+                    <option>Shopping</option>
+
+                    <option>Travel</option>
+
+                    <option>Education</option>
+
+                    <option>Entertainment</option>
+
+                    <option>Other</option>
+
+                </select>
+
+                <select name="type" required>
+
+                    <option value="Expense">Expense</option>
+
+                    <option value="Income">Income</option>
+
+                </select>
+
+                <button type="submit">+ Add Transaction</button>
+
+            </form>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>Transactions</h2>
+
+            <table>
+
+                <tr>
+
+                    <th>Name</th>
+
+                    <th>Amount</th>
+
+                    <th>Type</th>
+
+                    <th></th>
+
+                </tr>
+
+                {% for item in transactions %}
+
+                <tr>
+
+                    <td>{{ item[1] }}</td>
+
+                    <td>₹{{ "%.2f"|format(item[2]) }}</td>
+
+                    <td>{{ item[4] }}</td>
+
+                    <td>
+
+                        <a class="delete"
+
+                           href="/delete/{{ item[0] }}">Delete</a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="4">No transactions yet.</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <div class="panel chart">
+
+        <h2>Spending Overview</h2>
+
+        <canvas id="expenseChart"></canvas>
+
+    </div>
+
+</main>
+
+<script>
+
+    const transactions = {{ transactions | tojson }};
+
+    const categories = {};
+
+    transactions.forEach(item => {
+
+        if (item[4] === "Expense") {
+
+            categories[item[3]] =
+
+                (categories[item[3]] || 0) + item[2];
+
+        }
+
+    });
+
+    new Chart(document.getElementById("expenseChart"), {
+
+        type: "doughnut",
+
+        data: {
+
+            labels: Object.keys(categories),
+
+            datasets: [{
+
+                data: Object.values(categories),
+
+                backgroundColor: [
+
+                    "#7167dc",
+
+                    "#20b486",
+
+                    "#f16b75",
+
+                    "#f4b942",
+
+                    "#48a9c5",
+
+                    "#a78bfa"
+
+                ]
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true
+
+        }
+
+    });
+
+</script>
+
+</body>
+
+</html>
